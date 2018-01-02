@@ -78,6 +78,10 @@
     <Analyzer Include="..\packages\xunit.analyzers.0.7.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Sudoku.Logic\Sudoku.Logic.csproj">
+      <Project>{ABE826F5-449C-424E-A36A-EAA74CC6B7EB}</Project>
+      <Name>Sudoku.Logic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Sudoku.Model\Sudoku.Model.csproj">
       <Project>{73F0DCF5-0291-46A9-A787-5325258FC137}</Project>
       <Name>Sudoku.Model</Name>
@@ -85,6 +89,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Samples\BasicLevel\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
