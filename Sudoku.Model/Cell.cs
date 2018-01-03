@@ -10,8 +10,8 @@ namespace Sudoku.Model
 		public int Value { get; private set; }
 		public bool IsEmpty => Value == 0;
 
-		private IList<int> _possibleValues = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.ToList();
-		public IList<int> PossibleValues
+		private List<int> _possibleValues = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.ToList();
+		public List<int> PossibleValues
 		{
 			get { return _possibleValues; }
 			set

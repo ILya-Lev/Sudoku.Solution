@@ -18,8 +18,7 @@ namespace Sudoku.Logic
 			var clonedField = field.Clone();
 			foreach (var step in _steps)
 			{
-				step.TryResolve(clonedField);
-				if (step.IsResolved)
+				if (step.TryResolve(clonedField))
 					return clonedField;
 			}
 

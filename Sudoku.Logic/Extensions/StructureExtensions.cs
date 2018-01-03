@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using Sudoku.Model;
+﻿using Sudoku.Model;
+using System.Linq;
 
 namespace Sudoku.Logic.Extensions
 {
@@ -19,26 +19,11 @@ namespace Sudoku.Logic.Extensions
 			return filledCells.Distinct().Count() != filledCells.Count;
 		}
 
-		public static void FilterPossibleValues(this Structure aStructure)
+		public static Structure Clone(this Structure source)
 		{
-			var presentValues = aStructure.Cells.Where(c => !c.IsEmpty).Select(c => c.Value);
-			foreach (var cell in aStructure.Cells)
-			{
-				if (!cell.IsEmpty)
-					continue;
-
-				// presentValues is intentionally evaluated in each loop step as situation may change in intersections parsing
-				cell.PossibleValues = cell.PossibleValues.Except(presentValues).ToList();
-
-				if (!cell.IsEmpty)
-				{
-					aStructure.Intersections
-							  .Where(intersection => intersection.Value == cell)
-							  .Select(intersection => intersection.Key)
-							  .ToList()
-							  .ForEach(FilterPossibleValues);
-				}
-			}
+			var clonedCells = source.Cells.Select(c => c.Clone()).ToList();
+			var clone = new Structure(clonedCells);
+			return clone;
 		}
 	}
 }

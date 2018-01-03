@@ -12,6 +12,11 @@ namespace Sudoku.Model
 		{
 			var lines = ReadLinesFromFile(fullFilePath);
 
+			return CreateFromLines(lines);
+		}
+
+		public static Field CreateFromLines(List<Structure> lines)
+		{
 			var field = new Field
 			{
 				Lines = lines,
@@ -19,7 +24,9 @@ namespace Sudoku.Model
 				Squares = GenerateSquaresFromLines(lines).ToList()
 			};
 
-			FulfillIntersectionsOf(field.Columns, field.Squares);
+			IntersectionsCreator.AddLineWithColumnIntersections(lines, field.Columns);
+			IntersectionsCreator.AddLineWithSquareIntersections(lines, field.Squares);
+			IntersectionsCreator.AddColumnWithSquareIntersections(field.Columns, field.Squares);
 
 			return field;
 		}
@@ -27,8 +34,10 @@ namespace Sudoku.Model
 		private static List<Structure> ReadLinesFromFile(string fullFilePath)
 		{
 			if (!File.Exists(fullFilePath))
-				throw new
-					FileNotFoundException($"Cannot find file at {fullFilePath}; working directory {Environment.CurrentDirectory}");
+			{
+				throw new FileNotFoundException($"Cannot find file at {fullFilePath};"
+											  + $" working directory {Environment.CurrentDirectory}");
+			}
 
 			var lines = File
 						.ReadLines(fullFilePath)
@@ -47,12 +56,6 @@ namespace Sudoku.Model
 				var columnCells = lines.Select(line => line.Cells[columnIndex]).ToList();
 				var column = new Structure(columnCells);
 
-				lines.ForEach(line =>
-				{
-					line.AddIntersection(column, line.Cells[columnIndex]);
-					column.AddIntersection(line, line.Cells[columnIndex]);
-				});
-
 				yield return column;
 			}
 		}
@@ -61,75 +64,15 @@ namespace Sudoku.Model
 		{
 			for (int squareIndex = 0; squareIndex < Size; squareIndex++)
 			{
-				var squareCells = lines.Where(IsLineForTheSquare(squareIndex))
-									   .SelectMany(line => line.Cells.Where(IsCellALineSquareCross(squareIndex)))
-									   .ToList();
+				var squareCells = lines
+					.Where(IntersectionsCreator.IsLineForTheSquare(squareIndex))
+					.SelectMany(line => line.Cells
+									  .Where(IntersectionsCreator.IsCellALineSquareCross(squareIndex)))
+					.ToList();
 				var square = new Structure(squareCells);
-
-				foreach (var line in lines.Where(IsLineForTheSquare(squareIndex)))
-				{
-					line.Cells
-						.Where(IsCellALineSquareCross(squareIndex))
-						.ToList()
-						.ForEach(cell =>
-						{
-							line.AddIntersection(square, cell);
-							square.AddIntersection(line, cell);
-						});
-				}
 
 				yield return square;
 			}
-		}
-
-		private static void FulfillIntersectionsOf(List<Structure> columns, List<Structure> squares)
-		{
-			for (int squareIndex = 0; squareIndex < Size; squareIndex++)
-			{
-				foreach (var column in columns.Where(IsColumnForTheSquare(squareIndex)))
-				{
-					column.Cells
-						.Where(IsCellAColumnSquareCross(squareIndex))
-						.ToList()
-						.ForEach(cell =>
-						{
-							column.AddIntersection(squares[squareIndex], cell);
-							squares[squareIndex].AddIntersection(column, cell);
-						});
-				}
-			}
-		}
-
-		private static Func<Structure, int, bool> IsColumnForTheSquare(int squareIndex)
-		{
-			return (column, idx) => idx / Divisor == squareIndex % Divisor;
-		}
-
-		private static Func<Structure, int, bool> IsLineForTheSquare(int squareIndex)
-		{
-			return (line, idx) => idx / Divisor == squareIndex / Divisor;
-		}
-
-		private static Func<Cell, int, bool> IsCellALineSquareCross(int squareIndex)
-		{
-			return (c, idx) =>
-			{
-				// a vertical stripe of width = Divisor columns
-				var stripePosition = Divisor * (squareIndex % Divisor);
-				var stripe = Enumerable.Range(stripePosition, Divisor);
-				return stripe.Contains(idx);
-			};
-		}
-
-		private static Func<Cell, int, bool> IsCellAColumnSquareCross(int squareIndex)
-		{
-			return (c, idx) =>
-			{
-				// a horizontal stripe of width = Divisor lines
-				var stripePosition = Divisor * (squareIndex / Divisor);
-				var stripe = Enumerable.Range(stripePosition, Divisor);
-				return stripe.Contains(idx);
-			};
 		}
 	}
 }

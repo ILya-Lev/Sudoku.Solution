@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using Sudoku.Model;
+﻿using Sudoku.Model;
+using System.Linq;
 
 namespace Sudoku.Logic.Extensions
 {
@@ -17,24 +17,30 @@ namespace Sudoku.Logic.Extensions
 
 		public static bool HaveContradictions(this Field aField)
 		{
-			return aField.Lines.Any(line => line.HaveContradictions());
-		}
-
-		public static void RunPossibleValuesFiltration(this Field aField)
-		{
-			aField.Lines.ForEach(line => line.FilterPossibleValues());
-			aField.Columns.ForEach(column => column.FilterPossibleValues());
-			aField.Squares.ForEach(square => square.FilterPossibleValues());
+			return aField.Lines.Any(line => line.HaveContradictions())
+				|| aField.Columns.Any(column => column.HaveContradictions())
+				|| aField.Squares.Any(square => square.HaveContradictions());
 		}
 
 		public static Field Clone(this Field aField)
 		{
-			var copy = new Field();
-			copy.Lines.AddRange(aField.Lines);
-			copy.Columns.AddRange(aField.Columns);
-			copy.Squares.AddRange(aField.Squares);
+			var lines = aField.Lines.Select(line => line.Clone()).ToList();
+
+			var copy = FieldFactory.CreateFromLines(lines);
 
 			return copy;
 		}
+
+		public static void CopyFrom(this Field target, Field source)
+		{
+			target.Lines.Clear();
+			target.Columns.Clear();
+			target.Squares.Clear();
+
+			target.Lines.AddRange(source.Lines);
+			target.Columns.AddRange(source.Columns);
+			target.Squares.AddRange(source.Squares);
+		}
+
 	}
 }
